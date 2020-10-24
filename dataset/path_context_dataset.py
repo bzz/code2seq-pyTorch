@@ -94,6 +94,9 @@ class PathContextDataset(IterableDataset):
         self._cur_sample_idx += 1
         return context, label, paths_for_label
 
+    def __len__(self) -> int:
+        return self._total_n_samples
+
     def get_n_samples(self):
         return self._total_n_samples
 
