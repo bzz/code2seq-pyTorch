@@ -6,6 +6,7 @@ from collections import namedtuple
 import numpy
 import torch
 from torch.utils.data import IterableDataset, DataLoader
+import torch_xla.core.xla_model as xm
 
 from dataset import BufferedPathContext
 from utils.common import FROM_TOKEN, PATH_TYPES, TO_TOKEN
@@ -43,8 +44,8 @@ class PathContextDataset(IterableDataset):
 
         WorkerInfo = namedtuple('WorkerInfo', ['id', 'num_workers'])
         worker_info = WorkerInfo(
-            id=torch.distributed.get_rank(),
-            num_workers=torch.distributed.get_world_size()
+            id=xm.get_ordinal(), #torch.distributed.get_rank()
+            num_workers=xm.xrt_world_size()# torch.distributed.get_world_size()
         )
         self.worker_info = worker_info
 
