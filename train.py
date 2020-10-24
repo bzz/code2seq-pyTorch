@@ -2,10 +2,10 @@ from argparse import ArgumentParser
 from os.path import join
 
 import torch
-import wandb
+# import wandb
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, LearningRateLogger
-from pytorch_lightning.loggers import WandbLogger
+# from pytorch_lightning.loggers import WandbLogger
 
 from configs import (
     get_code2seq_default_config,
@@ -39,11 +39,11 @@ def train(
         raise ValueError(f"Model {model_name} is not supported")
 
     # define logger
-    wandb_logger = WandbLogger(project=f"{model_name}-{dataset_name}", log_model=True, offline=is_test)
-    wandb_logger.watch(model)
+    # wandb_logger = WandbLogger(project=f"{model_name}-{dataset_name}", log_model=True, offline=is_test)
+    # wandb_logger.watch(model)
     # define model checkpoint callback
     model_checkpoint_callback = ModelCheckpoint(
-        filepath=join(wandb.run.dir, "{epoch:02d}-{val_loss:.4f}"),
+        filepath=join("checkpoints", "{epoch:02d}-{val_loss:.4f}"), #wandb.run.dir
         period=config.hyperparams.save_every_epoch,
         save_top_k=3,
     )
@@ -59,7 +59,7 @@ def train(
         # deterministic=True,
         check_val_every_n_epoch=config.hyperparams.val_every_epoch,
         row_log_interval=config.hyperparams.log_every_epoch,
-        logger=wandb_logger,
+        # logger=wandb_logger,
         checkpoint_callback=model_checkpoint_callback,
         early_stop_callback=early_stopping_callback,
         resume_from_checkpoint=resume_from_checkpoint,
