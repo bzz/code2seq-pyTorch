@@ -43,8 +43,8 @@ class PathContextDataset(IterableDataset):
 
         WorkerInfo = namedtuple('WorkerInfo', ['id', 'num_workers'])
         worker_info = WorkerInfo(
-            id=torch.dist.get_rank(),
-            num_workers=torch.dist.get_world_size()
+            id=torch.distributed.get_rank(),
+            num_workers=torch.distributed.get_world_size()
         )
         self.worker_info = worker_info
 
