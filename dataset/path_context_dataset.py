@@ -1,6 +1,7 @@
 from math import ceil
 from os.path import exists, join
 from typing import Dict, Tuple, List
+from collections import namedtuple
 
 import numpy
 import torch
@@ -40,6 +41,13 @@ class PathContextDataset(IterableDataset):
         self._end_file_idx = None
         self._cur_buffered_path_context = None
 
+        WorkerInfo = namedtuple('WorkerInfo', ['id', 'num_workers'])
+        worker_info = WorkerInfo(
+            id=torch.dist.get_rank(),
+            num_workers=torch.dist.get_world_size()
+        )
+        self.worker_info = worker_info
+
     def _prepare_buffer(self, file_idx: int) -> None:
         assert file_idx < len(self._buffered_files_paths)
         self._cur_buffered_path_context = BufferedPathContext.load(self._buffered_files_paths[file_idx])
@@ -49,13 +57,13 @@ class PathContextDataset(IterableDataset):
         self._cur_sample_idx = 0
 
     def __iter__(self):
-        worker_info = torch.utils.data.get_worker_info()
-        if worker_info is None:
+        # worker_info = torch.utils.data.get_worker_info()
+        if self.worker_info is None:
             self._cur_file_idx = 0
             self._end_file_idx = len(self._buffered_files_paths)
         else:
-            worker_id = worker_info.id
-            per_worker = int(ceil(len(self._buffered_files_paths) / float(worker_info.num_workers)))
+            worker_id = self.worker_info.id
+            per_worker = int(ceil(len(self._buffered_files_paths) / float(self.worker_info.num_workers)))
             self._cur_file_idx = per_worker * worker_id
             self._end_file_idx = min(self._cur_file_idx + per_worker, len(self._buffered_files_paths))
         return self
@@ -123,7 +131,7 @@ def create_dataloader(
         dataset,
         batch_size=batch_size,
         collate_fn=PathContextBatch.collate_wrapper,
-        num_workers=n_workers,
+        # num_workers=n_workers,
         pin_memory=True,
     )
     return dataloader, dataset.get_n_samples()

@@ -56,14 +56,15 @@ def train(
     trainer = Trainer(
         max_epochs=config.hyperparams.n_epochs,
         gradient_clip_val=config.hyperparams.clip_norm,
-        deterministic=True,
+        # deterministic=True,
         check_val_every_n_epoch=config.hyperparams.val_every_epoch,
         row_log_interval=config.hyperparams.log_every_epoch,
         logger=wandb_logger,
         checkpoint_callback=model_checkpoint_callback,
         early_stop_callback=early_stopping_callback,
         resume_from_checkpoint=resume_from_checkpoint,
-        gpus=gpu,
+        # gpus=gpu,
+        tpu_cores=8,
         callbacks=[lr_logger],
         reload_dataloaders_every_epoch=True,
     )
